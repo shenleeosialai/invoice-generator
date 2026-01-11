@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Invoice</title>
+
+<!-- PDF Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+:root {
+  --border: #e5e7eb;
+  --text: #111827;
+  --muted: #6b7280;
+  --accent: #2563eb;
+  --light: #f9fafb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f3f4f6;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+}
+
+.invoice-wrapper {
+  max-width: 900px;
+  margin: 40px auto;
+  background: white;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+}
+
+/* HEADER */
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.company {
+  display: flex;
+  flex-direction: column;
+}
+
+.company-logo {
+  width: 200px;
+  max-height: 200px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+.company h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.company p {
+  margin: 4px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.invoice-info {
+  text-align: right;
+}
+
+.invoice-info h2 {
+  margin: 0;
+  font-size: 28px;
+}
+
+/* TOP INFO: BILL TO + BALANCE */
+.top-info {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  gap: 20px;
+}
+
+.bill-to {
+  max-width: 50%;
+}
+
+.invoice-summary {
+  text-align: right;
+}
+
+.balance {
+  background: #f9fafb;
+  padding: 16px 20px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.balance strong {
+  font-size: 22px;
+  color: #2563eb;
+}
+
+/* PAID / UNPAID BADGE */
+.badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 4px;
+  color: white;
+  text-transform: uppercase;
+}
+
+.badge.paid {
+  background-color: #16a34a; /* green */
+}
+
+.badge.unpaid {
+  background-color: #dc2626; /* red */
+}
+
+/* SECTIONS */
+.section {
+  margin-top: 40px;
+}
+
+.section-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.editable {
+  border-bottom: 1px dashed transparent;
+}
+
+.editable:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  border: 1px solid var(--border);
+  padding: 10px;
+  font-size: 14px;
+}
+
+#items thead th {
+  background: #2563eb;
+  color: white;
+  border-color: #1e40af;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+td input {
+  width: 100%;
+  border: none;
+  font-size: 14px;
+  background: #e7e8ea; /* light background for table body */
+}
+
+td input:focus {
+  outline: none;
+}
+
+#items tbody td {
+  background: #e7e8ea; /* light background for table body */
+}
+
+.actions {
+  text-align: center;
+}
+
+.actions button {
+  background: none;
+  border: none;
+  color: red;
+  cursor: pointer;
+}
+
+/* TOTALS */
+.totals {
+  margin-top: 30px;
+  width: 100%;
+  max-width: 300px;
+  margin-left: auto;
+}
+
+.totals div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+/* FOOTER */
+.footer {
+  margin-top: 40px;
+}
+
+button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #374151;
+}
+
+.no-print {
+  margin-top: 30px;
+  display: flex;
+  gap: 10px;
+}
+
+/* RESPONSIVE */
+@media(max-width: 700px) {
+  .header {
+    flex-direction: column;
+  }
+
+  .invoice-info {
+    text-align: left;
+  }
+
+  .top-info {
+    flex-direction: column;
+  }
+
+  .invoice-summary {
+    text-align: left;
+    margin-top: 20px;
+  }
+}
+/* RESPONSIVE SCALING */
+@media(max-width: 700px) {
+  .invoice-wrapper {
+    margin: 20px;
+    padding: 20px;
+    transform: scale(0.9); /* scale down slightly to fit smaller screens */
+    transform-origin: top left;
+  }
+
+  .company-logo {
+    width: 150px; /* slightly smaller logo */
+  }
+
+  .company h1 {
+    font-size: 20px;
+  }
+
+  .invoice-info h2 {
+    font-size: 24px;
+  }
+
+  th, td {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .totals div {
+    font-size: 14px;
+  }
+
+  .balance {
+    padding: 12px 16px;
+  }
+}
+
+
+</style>
+</head>
+
+<body>
+
+<div class="invoice-wrapper" id="invoice">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="company">
+      <h1 contenteditable class="editable">Alice Engineering</h1>
+      <p contenteditable class="editable">53B, Avenue House</p>
+      <p contenteditable class="editable">Kenyatta Avenue</p>
+      <p contenteditable class="editable">Nairobi, Kenya</p>
+    </div>
+    <div>
+        <img src="logo.png" alt="Company Logo" class="company-logo">
+    </div>
+    <div class="invoice-info">
+      <h2>INVOICE</h2>
+      <p>Invoice #: <span contenteditable class="editable" id="invoiceNumber">1001</span></p>
+      <p>Date: <span contenteditable class="editable">11 Jan 2026</span></p>
+      <p>Terms: <span contenteditable class="editable">Due on Receipt</span></p>
+    </div>
+  </div>
+
+  <!-- BILL TO + BALANCE -->
+  <div class="top-info">
+    <div class="bill-to">
+      <div class="section-title">BILL TO</div>
+      <p contenteditable class="editable">Client Name</p>
+      <p contenteditable class="editable">Client Address</p>
+      <p contenteditable class="editable">City, Country</p>
+    </div>
+
+    <div class="invoice-summary">
+      <div class="balance">
+        Balance Due<br>
+        <strong>Ksh <span id="balanceDue">0.00</span></strong>
+        <div id="statusBadge" class="badge unpaid">UNPAID</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ITEMS TABLE -->
+  <div class="section">
+    <table id="items">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Item & Description</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Amount</th>
+          <th class="no-print">Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <button class="secondary no-print" onclick="addRow()">+ Add Item</button>
+  </div>
+
+  <!-- TOTAL -->
+  <div class="totals">
+    <div>
+      <strong>Total</strong>
+      <strong>Ksh <span id="total">0.00</span></strong>
+    </div>
+  </div>
+
+  <!-- NOTES -->
+  <div class="footer">
+    <div class="section-title">Notes</div>
+    <p contenteditable class="editable">Thank you for your business.</p>
+
+    <div class="section-title">Terms & Conditions</div>
+    <p contenteditable class="editable">Payment is due within 15 days.</p>
+  </div>
+
+</div>
+
+<!-- ACTIONS -->
+<div class="no-print" style="max-width:900px;margin:auto">
+  <button onclick="downloadPDF()">Download PDF</button>
+  <button onclick="toggleStatus()">Toggle Paid/Unpaid</button>
+</div>
+
+<script>
+const tbody = document.querySelector("#items tbody");
+const statusBadge = document.getElementById("statusBadge");
+
+function addRow() {
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td>${tbody.children.length + 1}</td>
+    <td><input placeholder="Service description"></td>
+    <td><input type="number" value="1" oninput="calculate()"></td>
+    <td><input type="number" value="0" oninput="calculate()"></td>
+    <td>Ksh <span class="amount">0.00</span></td>
+    <td class="actions no-print"><button onclick="removeRow(this)">✕</button></td>
+  `;
+  tbody.appendChild(row);
+  calculate();
+}
+
+function removeRow(btn) {
+  btn.closest("tr").remove();
+  calculate();
+}
+
+function calculate() {
+  let total = 0;
+
+  document.querySelectorAll("#items tbody tr").forEach(row => {
+    const qty = row.children[2].querySelector("input").value || 0;
+    const rate = row.children[3].querySelector("input").value || 0;
+    const amount = qty * rate;
+
+    row.querySelector(".amount").textContent = amount.toFixed(2);
+    total += amount;
+  });
+
+  document.getElementById("total").textContent = total.toFixed(2);
+  document.getElementById("balanceDue").textContent = total.toFixed(2);
+}
+
+// Toggle Paid / Unpaid
+function toggleStatus() {
+  if(statusBadge.classList.contains("unpaid")){
+    statusBadge.classList.remove("unpaid");
+    statusBadge.classList.add("paid");
+    statusBadge.textContent = "PAID";
+  } else {
+    statusBadge.classList.remove("paid");
+    statusBadge.classList.add("unpaid");
+    statusBadge.textContent = "UNPAID";
+  }
+}
+
+async function downloadPDF() {
+  document.querySelectorAll(".no-print").forEach(el => el.style.display = "none");
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF("p", "pt", "a4");
+
+  const canvas = await html2canvas(document.getElementById("invoice"), { scale: 2 });
+  const img = canvas.toDataURL("image/png");
+
+  pdf.addImage(img, "PNG", 20, 20, 555, 0);
+
+  const inv = document.getElementById("invoiceNumber").textContent.trim();
+  pdf.save(`INV-${inv}.pdf`);
+
+  document.querySelectorAll(".no-print").forEach(el => el.style.display = "");
+}
+
+addRow();
+</script>
+
+</body>
+</html>
